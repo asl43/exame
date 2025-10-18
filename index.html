@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Exames + SisReg</title>
+<style>
+    /* ================================================================= */
+    /* ========================== CSS COMPLETO ========================= */
+    /* ================================================================= */
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        min-height: 100vh; 
+        padding: 20px; 
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header { text-align: center; color: white; margin-bottom: 40px; }
+    .header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .header p { font-size: 1rem; opacity: 0.9; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+    .tab-btn { 
+        padding: 12px 24px; 
+        background: rgba(255,255,255,0.2); 
+        color: white; 
+        border: 2px solid white; 
+        border-radius: 10px; 
+        cursor: pointer; 
+        font-size: 1rem; 
+        font-weight: 600; 
+        transition: all 0.3s ease; 
+        backdrop-filter: blur(10px); 
+    }
+    .tab-btn.active { background: white; color: #667eea; border-color: white; }
+    .tab-btn:hover { transform: translateY(-2px); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .content { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 40px; }
+    @media (max-width: 1024px) { .content { grid-template-columns: 1fr; } }
+    .form-card { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+    .form-card h2 { color: #667eea; margin-bottom: 20px; font-size: 1.3rem; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; margin-bottom: 6px; color: #333; font-weight: 500; font-size: 0.9rem; }
+    .form-group input, .form-group select { 
+        width: 100%; 
+        padding: 12px 14px; 
+        border: 2px solid #e0e0e0; 
+        border-radius: 10px; 
+        font-size: 0.95rem; 
+        transition: all 0.3s ease; 
+        font-family: inherit; 
+    }
+    .form-group input:focus, .form-group select:focus { 
+        outline: none; 
+        border-color: #667eea; 
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); 
+    }
+    .btn-save { 
+        width: 100%; 
+        padding: 14px; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        color: white; 
+        border: none; 
+        border-radius: 10px; 
+        font-size: 1rem; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: all 0.3s ease; 
+        margin-top: 10px; 
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+    @media (max-width: 480px) { .stats { grid-template-columns: 1fr; } }
+    .stat-card { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        color: white; 
+        padding: 18px; 
+        border-radius: 12px; 
+        text-align: center; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+    }
+    .stat-card .number { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
+    .stat-card .label { font-size: 0.85rem; opacity: 0.9; }
+    .search-box { position: relative; margin-bottom: 25px; }
+    .search-box input { 
+        width: 100%; 
+        padding: 14px 16px 14px 40px; 
+        border: 2px solid #e0e0e0; 
+        border-radius: 10px; 
+        font-size: 0.95rem; 
+        transition: all 0.3s ease; 
+    }
+    .search-box input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); }
+    .search-icon { position: absolute; left: 14px; top: 14px; font-size: 1.1rem; }
+    .table-container { 
+        background: white; 
+        border-radius: 16px; 
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+        overflow: hidden; 
+    }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    th { padding: 16px; text-align: left; font-weight: 600; font-size: 0.9rem; }
+    td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; color: #333; }
+    tbody tr { transition: all 0.3s ease; }
+    tbody tr:hover { background: #f8f9ff; }
+    .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn { 
+        padding: 8px 12px; 
+        border: none; 
+        border-radius: 8px; 
+        cursor: pointer; 
+        font-size: 0.85rem; 
+        font-weight: 500; 
+        transition: all 0.3s ease; 
+        white-space: nowrap; 
+    }
+    .btn-fav { background: #fff3cd; color: #333; border: 2px solid #ffc107; }
+    .btn-fav.favorito { background: #ffc107; color: #333; }
+    .btn-fav:hover { transform: scale(1.05); }
+    .btn-edit { background: #e3f2fd; color: #1976d2; border: 2px solid #1976d2; }
+    .btn-edit:hover { background: #1976d2; color: white; }
+    .btn-delete { background: #ffebee; color: #d32f2f; border: 2px solid #d32f2f; }
+    .btn-delete:hover { background: #d32f2f; color: white; }
+    .btn-check { background: #c8e6c9; color: #2e7d32; border: 2px solid #2e7d32; }
+    .btn-check:hover { background: #2e7d32; color: white; }
+    .section { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin-bottom: 30px; }
+    .section h3 { color: #667eea; margin-bottom: 20px; font-size: 1.3rem; }
+    .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media (max-width: 480px) { .button-grid { grid-template-columns: 1fr; } }
+    .btn-pdf { 
+        padding: 14px 20px; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        color: white; 
+        border: none; 
+        border-radius: 10px; 
+        font-size: 1rem; 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: all 0.3s ease; 
+    }
+    .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+    .automation-info { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .automation-info h4 { color: #1976d2; margin-bottom: 8px; }
+    .automation-info p { color: #333; font-size: 0.9rem; margin-bottom: 8px; }
+    .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .status-aguardando { background: #fff3cd; color: #856404; }
+    .status-agendado { background: #d4edda; color: #155724; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+    .empty-state h3 { font-size: 1.3rem; margin-bottom: 10px; }
+    .status-sisreg { background: #fff9c4; border-left: 4px solid #fbc02d; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none; }
+    .status-sisreg.active { display: block; }
+    .status-sisreg.success { background: #c8e6c9; border-left-color: #2e7d32; }
+    .status-sisreg.error { background: #ffcdd2; border-left-color: #d32f2f; }
+    #loading { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(255, 255, 255, 0.8); 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        z-index: 1000; 
+        font-size: 2rem; 
+        color: #667eea; 
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .spinner { 
+        border: 4px solid #f3f3f3; 
+        border-top: 4px solid #667eea; 
+        border-radius: 50%; 
+        width: 40px; 
+        height: 40px; 
+        animation: spin 2s linear infinite; 
+        margin-right: 15px;
+    }
+
+    /* ================================================================= */
+    /* ======================= FIM DO CSS COMPLETO ======================= */
+    /* ================================================================= */
+</style>
+</head>
+<body>
+
+<div id="loading" style="display: none;">
+  <div class="spinner"></div> <span>Carregando dados...</span>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h1>📋 Controle de Exames + SisReg</h1>
+        <p>Gerenciador completo com automação de consultas (Dados via Google Sheets)</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="mudarAba('exames', this)">📝 Meus Exames</button>
+        <button class="tab-btn" onclick="mudarAba('sisreg', this)">🔍 Consultar SisReg</button>
+        <button class="tab-btn" onclick="mudarAba('automacao', this)">⚙️ Automação</button>
+        <button class="tab-btn" onclick="mudarAba('relatorios', this)">📊 Relatórios</button>
+    </div>
+
+    <div id="exames" class="tab-content active">
+        <div class="content">
+            <div class="form-card">
+                <h2>Novo Exame</h2>
+                <input type="hidden" id="editTimestamp">
+                
+                <div class="form-group">
+                    <label>Nome da Pessoa</label>
+                    <input type="text" id="nomePessoa" placeholder="Digite o nome completo" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Exame</label>
+                    <input type="text" id="exame" placeholder="Ex: Eletroencefalograma" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Código de Solicitação</label>
+                    <input type="text" id="codigo" placeholder="Ex: 610453532" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Unidade de Saúde</label>
+                    <input type="text" id="unidade" placeholder="Ex: Policlínica da PM" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="status">
+                        <option value="Aguardando">Aguardando</option>
+                        <option value="Agendado">Agendado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Data e Hora</label>
+                    <input type="datetime-local" id="dataHora">
+                </div>
+
+                <button class="btn-save" id="btnSalvar" onclick="salvarOuEditar()">Salvar Exame</button>
+            </div>
+
+            <div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="number" id="totalExames">0</div>
+                        <div class="label">Total de Exames</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="aguardando">0</div>
+                        <div class="label">Aguardando</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="agendado">0</div>
+                        <div class="label">Agendados</div>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search" placeholder="Buscar por nome, exame, código..." onkeyup="atualizarTabela(document.getElementById('search').value)">
+                </div>
+
+                <div class="table-container">
+                    <div class="table-wrapper">
+                        <table id="tabelaExames">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">⭐</th>
+                                    <th>Nome</th>
+                                    <th>Exame</th>
+                                    <th>Código</th>
+                                    <th>Unidade</th>
+                                    <th>Status</th>
+                                    <th>Data/Hora</th>
+                                    <th style="width: 140px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="emptyState" class="empty-state" style="display:none;">
+                        <h3>📭 Nenhum exame encontrado</h3>
+                        <p>Adicione um novo exame para começar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sisreg" class="tab-content">
+        <div class="section">
+            <h3>🔍 Consultar SisReg</h3>
+            
+            <div class="automation-info">
+                <h4>ℹ️ Informações</h4>
+                <p>Simulação: Consulte o status de seus exames diretamente no sistema SisReg.</p>
+            </div>
+
+            <div id="statusSisReg" class="status-sisreg"></div>
+
+            <div class="form-card" style="padding: 20px;">
+                <div class="form-group">
+                    <label>📄 Selecione um exame para consultar:</label>
+                    <select id="exameParaConsulta">
+                        <option value="">-- Escolha um exame --</option>
+                    </select>
+                </div>
+
+                <button class="btn-pdf" onclick="consultarSisRegManual()" style="width: 100%; margin-top: 15px;">
+                    🔍 Consultar Agora
+                </button>
+
+                <div id="resultadoConsulta" style="margin-top: 20px; display: none; background: #f5f5f5; padding: 20px; border-radius: 10px;">
+                    <h4>Resultado da Consulta:</h4>
+                    <div id="resultadoTexto"></div>
+                </div>
+            </div>
+
+            <div class="form-card" style="padding: 20px; margin-top: 20px;">
+                <h4>📋 Últimas Consultas:</h4>
+                <div id="historico" style="max-height: 300px; overflow-y: auto;">
+                    <p style="color: #999; text-align: center;">Nenhuma consulta realizada ainda</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="automacao" class="tab-content">
+        <div class="section">
+            <h3>⚙️ Configuração de Automação</h3>
+            
+            <div class="automation-info">
+                <h4>🤖 Como Funciona</h4>
+                <p>O sistema pode consultar automaticamente seus exames no SisReg em horários determinados.</p>
+                <p><strong>Horários de Consulta:</strong> 10:00 e 16:00 (Simulado)</p>
+                <p><strong>Notificação:</strong> Por email quando houver novos agendamentos (Simulado)</p>
+            </div>
+
+            <div class="form-card" style="padding: 20px;">
+                <div class="form-group">
+                    <label>📧 Email para Notificações:</label>
+                    <input type="email" id="emailNotificacao" placeholder="seu.email@gmail.com" required>
+                    <small style="color: #666; margin-top: 5px; display: block;">Você receberá emails sobre novos agendamentos</small>
+                </div>
+
+                <div class="form-group">
+                    <label>🏥 Unidades de Saúde a Monitorar:</label>
+                    <div id="unidadesList" style="max-height: 200px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px;">
+                        <p style="color: #999;">Carregando...</p>
+                    </div>
+                </div>
+
+                <button class="btn-pdf" onclick="ativarAutomacao()" style="width: 100%; margin-top: 15px;">
+                    ✅ Ativar Automação
+                </button>
+
+                <div style="margin-top: 20px; padding: 15px; background: #c8e6c9; border-radius: 10px; border-left: 4px solid #2e7d32; display: none;" id="confirmacaoAutomacao">
+                    <p style="color: #2e7d32; margin: 0;"><strong>✅ Automação Ativada!</strong></p>
+                    <p style="color: #2e7d32; font-size: 0.9rem; margin: 5px 0 0 0;">Você receberá notificações por email nos horários configurados.</p>
+                </div>
+            </div>
+
+            <div class="form-card" style="padding: 20px; margin-top: 20px;">
+                <h4>📊 Status de Automação:</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <tr style="background: #f5f5f5;">
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Status:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;" id="statusAutomacao">Inativo</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Email Configurado:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;" id="emailConfigurado">-</td>
+                    </tr>
+                    <tr style="background: #f5f5f5;">
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Próxima Consulta:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;" id="proximaConsulta">-</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px;"><strong>Exames Monitorados:</strong></td>
+                        <td style="padding: 10px;" id="examesMonitorados">0</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="relatorios" class="tab-content">
+        <div class="section">
+            <h3>📊 Relatórios e Exportação</h3>
+            
+            <div class="button-grid">
+                <button class="btn-pdf" onclick="gerarPDF()">
+                    📄 Gerar PDF (Todos os Exames)
+                </button>
+                <button class="btn-pdf" onclick="gerarPDFExame()">
+                    📄 Gerar PDF (Um Exame)
+                </button>
+                <button class="btn-pdf" onclick="exportarCSV()">
+                    📋 Exportar como CSV
+                </button>
+                <button class="btn-pdf" onclick="exportarJSON()">
+                    📌 Exportar como JSON
+                </button>
+            </div>
+
+            <div class="form-card" style="padding: 20px; margin-top: 20px;">
+                <h4>📈 Estatísticas Gerais:</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <tr style="background: #f5f5f5;">
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Total de Exames:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;" id="statTotal">0</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Aguardando Agendamento:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;" id="statAguardando">0</td>
+                    </tr>
+                    <tr style="background: #f5f5f5;">
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;"><strong>Agendados:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;" id="statAgendado">0</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px;"><strong>Favoritos:</strong></td>
+                        <td style="padding: 10px;" id="statFavoritos">0</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+    /* ================================================================= */
+    /* ======================= JAVASCRIPT COMPLETO ======================= */
+    /* ================================================================= */
+
+    const { jsPDF } = window.jspdf;
+    // O array 'exames' agora será preenchido pelos dados do Google Sheets
+    let exames = []; 
+    // Histórico de consulta (simulado)
+    let historico = JSON.parse(sessionStorage.getItem('historicoConsultas')) || []; 
+
+    function salvarHistorico() {
+        sessionStorage.setItem('historicoConsultas', JSON.stringify(historico));
+    }
+
+    function mostrarLoading(show = true) {
+        document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        document.getElementById('btnSalvar').disabled = show;
+    }
+
+    // Chama a função lerDados no Apps Script e atualiza a interface
+    function carregarDadosDoSheet(filtro = '') {
+        mostrarLoading();
+        google.script.run
+            .withSuccessHandler(function(response) {
+                mostrarLoading(false);
+                if (response.sucesso) {
+                    exames = response.dados;
+                    atualizarTabela(filtro);
+                    atualizarEstatisticas();
+                    atualizarStatusAutomacao();
+                    preencherSelectExames();
+                } else {
+                    alert('❌ Erro ao carregar dados: ' + response.erro);
+                }
+            })
+            .withFailureHandler(function(erro) {
+                mostrarLoading(false);
+                alert('❌ Erro de comunicação com o Apps Script: ' + erro);
+            })
+            .lerDados();
+    }
+
+    // ==================== FUNÇÕES DE GERENCIAMENTO DE DADOS (USANDO APPS SCRIPT) ====================
+
+    function mudarAba(aba, btn) {
+        // Remove active de todas
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        // Adiciona active na selecionada
+        document.getElementById(aba).classList.add('active');
+        btn.classList.add('active');
+        
+        // Recarrega os dados do Sheet ao mudar de aba
+        carregarDadosDoSheet();
+    }
+
+    function ordenarExames() {
+        exames.sort((a, b) => {
+            if (a.favorito && !b.favorito) return -1;
+            if (!a.favorito && b.favorito) return 1;
+            if (a.dataHora && b.dataHora) {
+                const dateA = new Date(a.dataHora).getTime() || Infinity;
+                const dateB = new Date(b.dataHora).getTime() || Infinity;
+                return dateA - dateB;
+            }
+            return a.nome.localeCompare(b.nome);
+        });
+    }
+
+    function atualizarTabela(filtro = '') {
+        ordenarExames();
+        const tbody = document.querySelector("#tabelaExames tbody");
+        const emptyState = document.getElementById("emptyState");
+        tbody.innerHTML = '';
+        let aguardando = 0, agendado = 0, total = 0;
+
+        exames.forEach((exame) => {
+            if (filtro && !Object.values(exame).some(v => String(v).toLowerCase().includes(filtro.toLowerCase()))) return;
+            total++;
+            if (exame.status === "Aguardando") aguardando++;
+            if (exame.status === "Agendado") agendado++;
+
+            // Correção na formatação da data para lidar com valores vazios/nulos
+            const dataObjeto = exame.dataHora ? new Date(exame.dataHora) : null;
+            const dataFormatada = dataObjeto && !isNaN(dataObjeto) ? dataObjeto.toLocaleString('pt-BR') : '-';
+
+            const isFavorito = exame.favorito;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><button class="btn btn-fav ${isFavorito ? 'favorito' : ''}" onclick="favoritarExame('${exame.timestamp}', ${!isFavorito})">${isFavorito ? '⭐' : '☆'}</button></td>
+                <td>${exame.nome}</td>
+                <td>${exame.exame}</td>
+                <td><strong>${exame.codigo}</strong></td>
+                <td>${exame.unidade}</td>
+                <td><span class="status-badge status-${exame.status.toLowerCase()}">${exame.status}</span></td>
+                <td>${dataFormatada}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-edit" onclick="editarExame('${exame.timestamp}')">Editar</button>
+                        <button class="btn btn-delete" onclick="removerExame('${exame.timestamp}')">Excluir</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById("totalExames").textContent = exames.length;
+        document.getElementById("aguardando").textContent = aguardando;
+        document.getElementById("agendado").textContent = agendado;
+        emptyState.style.display = total === 0 ? 'block' : 'none';
+    }
+
+    function salvarOuEditar() {
+        const nome = document.getElementById('nomePessoa').value.trim();
+        const exame = document.getElementById('exame').value.trim();
+        const codigo = document.getElementById('codigo').value.trim();
+        const unidade = document.getElementById('unidade').value.trim();
+        const status = document.getElementById('status').value;
+        const dataHora = document.getElementById('dataHora').value;
+        const editTimestamp = document.getElementById('editTimestamp').value;
+
+        if (!nome || !exame || !codigo || !unidade) {
+            alert('⚠️ Preencha todos os campos obrigatórios!');
+            return;
+        }
+
+        const exameData = { nome, exame, codigo, unidade, status, dataHora };
+        mostrarLoading();
+
+        if (editTimestamp) {
+            // Edição
+            const exOriginal = exames.find(e => e.timestamp === editTimestamp);
+            exameData.timestamp = editTimestamp;
+            // Garante que o favorito seja mantido
+            exameData.favorito = exOriginal ? exOriginal.favorito : false; 
+            
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    mostrarLoading(false);
+                    if (response.sucesso) {
+                        alert('✅ Exame atualizado com sucesso!');
+                        carregarDadosDoSheet();
+                        limparCampos();
+                    } else {
+                        alert('❌ Erro ao atualizar exame: ' + response.erro);
+                    }
+                })
+                .atualizarExame(exameData);
+        } else {
+            // Novo
+            exameData.favorito = false;
+            
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    mostrarLoading(false);
+                    if (response.sucesso) {
+                        alert('✅ Exame adicionado com sucesso!');
+                        carregarDadosDoSheet();
+                        limparCampos();
+                    } else {
+                        alert('❌ Erro ao adicionar exame: ' + response.erro);
+                    }
+                })
+                .salvarExame(exameData);
+        }
+    }
+
+    function limparCampos() {
+        document.getElementById('nomePessoa').value = '';
+        document.getElementById('exame').value = '';
+        document.getElementById('codigo').value = '';
+        document.getElementById('unidade').value = '';
+        document.getElementById('dataHora').value = '';
+        document.getElementById('status').value = 'Aguardando';
+        document.getElementById('editTimestamp').value = '';
+        document.querySelector('.form-card h2').textContent = 'Novo Exame';
+        document.getElementById('btnSalvar').textContent = 'Salvar Exame';
+    }
+
+    function editarExame(timestamp) {
+        const ex = exames.find(e => e.timestamp === timestamp);
+        if (!ex) return;
+        
+        document.getElementById('editTimestamp').value = ex.timestamp;
+        document.getElementById('nomePessoa').value = ex.nome;
+        document.getElementById('exame').value = ex.exame;
+        document.getElementById('codigo').value = ex.codigo;
+        document.getElementById('unidade').value = ex.unidade;
+        document.getElementById('status').value = ex.status;
+        document.getElementById('dataHora').value = ex.dataHora ? ex.dataHora.substring(0, 16) : ''; // Formata para o input datetime-local
+        document.querySelector('.form-card h2').textContent = 'Editar Exame';
+        document.getElementById('btnSalvar').textContent = 'Atualizar Exame';
+        document.querySelector('#exames').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function removerExame(timestamp) {
+        if (confirm('⚠️ Tem certeza que deseja excluir este exame? Esta ação é irreversível na planilha!')) {
+            mostrarLoading();
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    mostrarLoading(false);
+                    if (response.sucesso) {
+                        alert('✅ Exame removido com sucesso!');
+                        carregarDadosDoSheet();
+                    } else {
+                        alert('❌ Erro ao remover exame: ' + response.erro);
+                    }
+                })
+                .removerExame(timestamp);
+        }
+    }
+
+    function favoritarExame(timestamp, novoStatus) {
+        mostrarLoading();
+        google.script.run
+            .withSuccessHandler(function(response) {
+                mostrarLoading(false);
+                if (response.sucesso) {
+                    carregarDadosDoSheet();
+                } else {
+                    alert('❌ Erro ao favoritar exame: ' + response.erro);
+                }
+            })
+            .atualizarFavorito(timestamp, novoStatus);
+    }
+
+    // ==================== FUNÇÕES SISREG (MANTIDAS COMO SIMULAÇÃO) ====================
+
+    function preencherSelectExames() {
+        const select = document.getElementById('exameParaConsulta');
+        select.innerHTML = '<option value="">-- Escolha um exame --</option>';
+        
+        exames.forEach((exame) => {
+            const option = document.createElement('option');
+            option.value = exame.timestamp; // Usa o timestamp como valor
+            option.textContent = `${exame.nome} - ${exame.exame} (${exame.codigo})`;
+            select.appendChild(option);
+        });
+    }
+
+    function atualizarHistorico() {
+        salvarHistorico();
+        const historicoDiv = document.getElementById('historico');
+        
+        if (historico.length === 0) {
+            historicoDiv.innerHTML = '<p style="color: #999; text-align: center;">Nenhuma consulta realizada ainda</p>';
+            return;
+        }
+
+        let html = '<ul style="list-style: none; padding: 0;">';
+        historico.slice(0, 5).forEach(item => {
+            const icon = item.resultado === 'Agendado' ? '✅' : '⏳';
+            html += `
+                <li style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${item.nome}</strong><br>
+                        <small style="color: #999;">${item.data}</small>
+                    </div>
+                    <span style="color: ${item.resultado === 'Agendado' ? '#2e7d32' : '#f57f17'};">${icon} ${item.resultado}</span>
+                </li>
+            `;
+        });
+        html += '</ul>';
+        
+        historicoDiv.innerHTML = html;
+    }
+
+    function consultarSisRegManual() {
+        const timestamp = document.getElementById('exameParaConsulta').value;
+        
+        if (timestamp === '') {
+            alert('⚠️ Selecione um exame para consultar!');
+            return;
+        }
+        const exame = exames.find(e => e.timestamp === timestamp);
+        if (!exame) return;
+        
+        const statusDiv = document.getElementById('statusSisReg');
+        const resultadoDiv = document.getElementById('resultadoConsulta');
+        
+        statusDiv.classList.add('active');
+        statusDiv.innerHTML = '🔄 Consultando SisReg...';
+        statusDiv.classList.remove('success', 'error');
+
+        // Simular consulta
+        setTimeout(() => {
+            const agora = new Date();
+            const dataAgendamento = new Date(agora.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000);
+            
+            // Simula uma chance maior de agendamento se já for favorito
+            const chanceAgendamento = exame.favorito ? 0.6 : 0.3;
+            const resultado = Math.random() > chanceAgendamento; 
+            
+            if (resultado) {
+                statusDiv.classList.add('success');
+                statusDiv.innerHTML = `✅ Exame agendado com sucesso!`;
+                
+                resultadoDiv.style.display = 'block';
+                resultadoDiv.innerHTML = `
+                    <p><strong>Paciente:</strong> ${exame.nome}</p>
+                    <p><strong>Exame:</strong> ${exame.exame}</p>
+                    <p><strong>Data/Hora:</strong> ${dataAgendamento.toLocaleString('pt-BR')}</p>
+                    <p><strong>Local:</strong> ${exame.unidade}</p>
+                    <p><strong>Código:</strong> ${exame.codigo}</p>
+                    <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; color: #666; font-size: 0.9rem;">
+                        <strong>⚠️ Lembre-se:</strong> Compareça com 15 minutos de antecedência.
+                    </p>
+                `;
+
+                // Adiciona ao histórico (simulado)
+                historico.unshift({
+                    nome: exame.nome,
+                    resultado: 'Agendado',
+                    data: new Date().toLocaleString('pt-BR')
+                });
+                atualizarHistorico();
+
+            } else {
+                statusDiv.classList.add('error');
+                statusDiv.innerHTML = `⏳ Exame ainda aguarda agendamento - Continue monitorando`;
+                resultadoDiv.style.display = 'none';
+
+                // Adiciona ao histórico (simulado)
+                historico.unshift({
+                    nome: exame.nome,
+                    resultado: 'Aguardando',
+                    data: new Date().toLocaleString('pt-BR')
+                });
+                atualizarHistorico();
+            }
+        }, 1500);
+    }
+
+    // ==================== FUNÇÕES DE AUTOMAÇÃO (SIMULAÇÃO) ====================
+    
+    function carregarUnidades() {
+        // Pega unidades únicas dos exames, ignorando vazios
+        const unidades = [...new Set(exames.map(e => e.unidade).filter(u => u))]; 
+        const lista = document.getElementById('unidadesList');
+        
+        if (unidades.length === 0) {
+            lista.innerHTML = '<p style="color: #999; text-align: center;">Adicione exames para ver as unidades</p>';
+            return;
+        }
+
+        let html = '';
+        unidades.forEach(unidade => {
+            const id = `unidade_${unidade.replace(/\s/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`;
+            html += `<div style="padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                <input type="checkbox" id="${id}" checked style="margin-right: 10px;">
+                <label for="${id}" style="cursor: pointer; flex: 1;">${unidade}</label>
+            </div>`;
+        });
+        lista.innerHTML = html;
+    }
+
+    function ativarAutomacao() {
+        const email = document.getElementById('emailNotificacao').value.trim();
+        if (!email || !email.includes('@')) {
+            alert('⚠️ Digite um email válido!');
+            return;
+        }
+        if (exames.length === 0) {
+            alert('⚠️ Adicione exames antes de ativar a automação!');
+            return;
+        }
+
+        // Salva a configuração no sessionStorage (simulação de backend de config)
+        const config = {
+            email: email,
+            ativo: true,
+            dataAtivacao: new Date().toLocaleString('pt-BR')
+        };
+        sessionStorage.setItem('configuracao', JSON.stringify(config));
+
+        // Atualiza interface
+        atualizarStatusAutomacao();
+        document.getElementById('confirmacaoAutomacao').style.display = 'block';
+        alert('✅ Automação ativada com sucesso!');
+    }
+
+    function atualizarProximaConsulta() {
+        const agora = new Date();
+        const horaAtual = agora.getHours();
+        let proximaHora;
+
+        // Horários de consulta simulados: 10h e 16h
+        if (horaAtual < 10) { proximaHora = 10; } 
+        else if (horaAtual < 16) { proximaHora = 16; } 
+        else { proximaHora = 10; agora.setDate(agora.getDate() + 1); }
+
+        agora.setHours(proximaHora, 0, 0, 0);
+        document.getElementById('proximaConsulta').textContent = agora.toLocaleString('pt-BR');
+    }
+
+    function atualizarStatusAutomacao() {
+        carregarUnidades();
+        const config = JSON.parse(sessionStorage.getItem('configuracao') || '{"ativo":false,"email":""}');
+        document.getElementById('emailNotificacao').value = config.email || '';
+        document.getElementById('statusAutomacao').textContent = config.ativo ? 'Ativo' : 'Inativo';
+        document.getElementById('emailConfigurado').textContent = config.email || '-';
+        document.getElementById('examesMonitorados').textContent = exames.filter(e => e.status === 'Aguardando').length;
+        
+        if (config.ativo) {
+            atualizarProximaConsulta();
+            document.getElementById('confirmacaoAutomacao').style.display = 'block';
+        } else {
+            document.getElementById('proximaConsulta').textContent = '-';
+            document.getElementById('confirmacaoAutomacao').style.display = 'none';
+        }
+    }
+
+    // ==================== FUNÇÕES DE RELATÓRIOS ====================
+
+    function atualizarEstatisticas() {
+        let aguardando = 0, agendado = 0, favoritos = 0;
+        
+        exames.forEach(exame => {
+            if (exame.status === 'Aguardando') aguardando++;
+            if (exame.status === 'Agendado') agendado++;
+            if (exame.favorito) favoritos++;
+        });
+
+        document.getElementById('statTotal').textContent = exames.length;
+        document.getElementById('statAguardando').textContent = aguardando;
+        document.getElementById('statAgendado').textContent = agendado;
+        document.getElementById('statFavoritos').textContent = favoritos;
+    }
+
+    function gerarPDF() {
+        if (exames.length === 0) { alert('⚠️ Não há exames para gerar o PDF.'); return; }
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        doc.setFontSize(22);
+        doc.setTextColor(102, 126, 234); 
+        doc.text('Relatório Geral de Exames', 148, 20, null, null, 'center');
+
+        doc.setFontSize(10);
+        doc.setTextColor(51, 51, 51);
+        doc.text(`Total de Exames: ${exames.length}`, 10, 30);
+        doc.text(`Data de Geração: ${new Date().toLocaleDateString('pt-BR')}`, 287, 30, null, null, 'right');
+        
+        const dadosTabela = exames.map(ex => [
+            ex.favorito ? '⭐' : '',
+            ex.nome.substring(0, 30) + (ex.nome.length > 30 ? '...' : ''), 
+            ex.exame.substring(0, 30) + (ex.exame.length > 30 ? '...' : ''),
+            ex.codigo,
+            ex.unidade.substring(0, 20) + (ex.unidade.length > 20 ? '...' : ''),
+            ex.status,
+            ex.dataHora ? new Date(ex.dataHora).toLocaleDateString('pt-BR') : '-' 
+        ]);
+
+        doc.autoTable({
+            startY: 35,
+            head: [['', 'Nome', 'Exame', 'Código', 'Unidade', 'Status', 'Data Agend.']],
+            body: dadosTabela,
+            theme: 'striped',
+            headStyles: { fillColor: [102, 126, 234] }, 
+            alternateRowStyles: { fillColor: [248, 249, 255] },
+            styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+            columnStyles: {
+                0: { cellWidth: 10 },
+                3: { cellWidth: 30 },
+                5: { cellWidth: 25 },
+                6: { cellWidth: 25 }
+            }
+        });
+
+        doc.save('Relatorio_Exames_Geral.pdf');
+        alert('✅ PDF Gerado com sucesso!');
+    }
+    
+    function gerarPDFExame() {
+        if (exames.length === 0) { alert('⚠️ Não há exames para gerar o PDF.'); return; }
+        const exame = prompt('Digite o NOME ou CÓDIGO de um exame para gerar o PDF:');
+        if (!exame) return;
+
+        const resultado = exames.find(e => 
+            e.nome.toLowerCase().includes(exame.toLowerCase()) || 
+            e.codigo.includes(exame)
+        );
+
+        if (!resultado) {
+            alert('⚠️ Exame não encontrado!');
+            return;
+        }
+
+        const doc = new jsPDF();
+        doc.setFontSize(20);
+        doc.setTextColor(102, 126, 234);
+        doc.text('Detalhes do Exame', 105, 20, null, null, 'center');
+        doc.setLineWidth(0.5);
+        doc.line(20, 22, 180, 22);
+
+        doc.setFontSize(12);
+        doc.setTextColor(51, 51, 51);
+        let y = 35;
+
+        const campos = [
+            ['Nome da Pessoa', resultado.nome],
+            ['Exame Solicitado', resultado.exame],
+            ['Código de Solicitação', resultado.codigo],
+            ['Unidade de Saúde', resultado.unidade],
+            ['Status Atual', resultado.status],
+            ['Data/Hora Agendada', resultado.dataHora ? new Date(resultado.dataHora).toLocaleString('pt-BR') : 'Aguardando Agendamento'],
+            ['Favorito', resultado.favorito ? 'Sim ⭐' : 'Não']
+        ];
+
+        campos.forEach(([label, value]) => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${label}:`, 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(value, 80, y);
+            y += 10;
+        });
+        
+        doc.save(`Exame_${resultado.nome.replace(/\s/g, '_')}.pdf`);
+        alert(`✅ PDF do Exame "${resultado.exame}" gerado com sucesso!`);
+    }
+
+    function exportarCSV() {
+        if (exames.length === 0) { alert('⚠️ Não há exames para exportar.'); return; }
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+        csvContent += "Nome,Exame,Código,Unidade,Status,DataHora,Favorito\n";
+
+        exames.forEach(ex => {
+            const dataFormatada = ex.dataHora ? new Date(ex.dataHora).toLocaleString('pt-BR') : '';
+            const linha = [
+                `"${ex.nome.replace(/"/g, '""')}"`, 
+                `"${ex.exame.replace(/"/g, '""')}"`,
+                ex.codigo,
+                `"${ex.unidade.replace(/"/g, '""')}"`,
+                ex.status,
+                dataFormatada,
+                ex.favorito ? 'Sim' : 'Não'
+            ].join(',');
+            csvContent += linha + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "controle_exames.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert('✅ Exportação para CSV concluída!');
+    }
+
+    function exportarJSON() {
+        if (exames.length === 0) { alert('⚠️ Não há exames para exportar.'); return; }
+        const jsonString = JSON.stringify(exames, null, 2); 
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonString);
+
+        const link = document.createElement("a");
+        link.setAttribute("href", dataStr);
+        link.setAttribute("download", "controle_exames.json");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert('✅ Exportação para JSON concluída!');
+    }
+    
+    // ==================== INICIALIZAÇÃO ====================
+
+    window.onload = function() {
+        // A função carregarConfiguracao() foi integrada ao atualizarStatusAutomacao()
+        carregarDadosDoSheet(); // Carrega dados do Google Sheet e atualiza a interface
+        atualizarHistorico(); 
+    };
+</script>
+</body>
+</html>
